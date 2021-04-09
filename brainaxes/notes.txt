@@ -9,3 +9,8 @@ y: back
 z: top
   scale:  0.8657852
   zero:   (78.335913, 68.616047)
+
+
+multiply by "scale"
+invert the "y" axis (dimension two)
+add the zero point
