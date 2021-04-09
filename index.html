@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <title>InfoVis</title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+  <link href="https://unpkg.com/vuetify@1.0.17/dist/vuetify.min.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+  <script src="https://unpkg.com/http-vue-loader"></script>
+  <script src="https://unpkg.com/vuetify@1.0.17/dist/vuetify.min.js"></script>
+</head>
+
+<body>
+
+  <div class="container body-content">
+    <div id="app" v-cloak>
+      <div>
+        <ortho :regions="regions" :connections="connections"></ortho>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loader = window.httpVueLoader;
+
+    var app = new Vue({
+      el: '#app',
+      components: {
+        'ortho': loader('/components/axes/ortho.vue')
+      },
+      data: {
+        regions: [
+          [0, 0, 0],
+          [-10, 15, 23]
+        ],
+        connections: [
+          [0, 1],
+          [1, 0]
+        ]
+      },
+      methods: {},
+      watch: {}
+    })
+  </script>
+
+</body>
+
+</html>
+
