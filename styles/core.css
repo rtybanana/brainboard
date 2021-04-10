@@ -1,0 +1,16 @@
+/* .nav-link {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-link:hover {
+  color: rgba(255, 255, 255, 0.75);
+} */
+
+.clickable {
+  cursor: pointer;
+}
+
+path.connection,
+circle.region {
+  transition: all 0.1s ease;
+}

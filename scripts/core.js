@@ -9,3 +9,5 @@ NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
       }
   }
 }
+
+const EventBus = new Vue();

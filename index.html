@@ -4,13 +4,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-  <title>InfoVis</title>
+  <title>BrainBoard</title>
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
-  <link href="https://unpkg.com/vuetify@1.0.17/dist/vuetify.min.css" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+  <link rel="stylesheet" href="/styles/core.css" />
+
+  <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
   <script src="https://unpkg.com/http-vue-loader"></script>
-  <script src="https://unpkg.com/vuetify@1.0.17/dist/vuetify.min.js"></script>
 
   <script src="scripts/core.js"></script>
   <script src="scripts/mixins.js"></script>
@@ -18,10 +24,34 @@
 
 <body>
 
-  <div class="container body-content">
-    <div id="app" v-cloak>
-      <div>
-        <ortho :regions="regions" :connections="connections"></ortho>
+  <div id="app" v-cloak>
+    <b-navbar type="dark" variant="danger">
+      <b-navbar-brand href="#">BrainBoard</b-navbar-brand>
+
+      <b-navbar-nav class="ml-auto">
+        <label class="mb-0 nav-link clickable" class="">
+          Upload Data
+          <input type="file" style="position: fixed; top: -100em">
+        </label>
+        <b-nav-item-dropdown text="Examples" right>
+          <b-dropdown-item href="#">Example #1</b-dropdown-item>
+          <b-dropdown-item href="#">Example #2</b-dropdown-item>
+          <b-dropdown-item href="#">Example #3</b-dropdown-item>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+    </b-navbar>
+
+    <div class="row no-gutters">
+      <div class="col-6">
+        <div class="row no-gutters">
+          <div class="col-12"></div>
+          <div class="col-12 mx-auto px-3">
+            <ortho :regions="regions" :connections="connections" :region-names="region_names"></ortho>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+
       </div>
     </div>
   </div>
@@ -32,17 +62,42 @@
     var app = new Vue({
       el: '#app',
       components: {
-        'ortho': loader('/components/axes/ortho.vue')
+        'ortho': loader('/components/ortho/ortho.vue')
       },
       data: {
         regions: [
-          [0, 0, 0],
-          [-10, 15, 40]
+          [  0,   0,   0],
+          [-10,  15,  40],
+          [ 25, -43,  57], 
+          [ -4, -65, -23]
         ],
-        connections: [
-          [0, 1],
-          [1, 0]
-        ]
+        connectivity: [
+          [0, 1, 1, 1],
+          [1, 0, 1, 1], 
+          [1, 1, 0, 1],
+          [1, 1, 1, 0]
+        ],
+        region_names: [
+          'prefrontal cortex',
+          'frontal pole',
+          'superior temporal gyrus',
+          'superior parietal lobule'
+        ],
+        file: null
+      },
+      computed: {
+        connections() {
+          let connections = [];
+          for (let i = 0; i < this.connectivity.length; i++){
+            for (let j = i + 1; j < this.connectivity.length; j++) {
+              if (this.connectivity[i][j] !== 0) {
+                connections.push({ region1: i, region2: j, strength: this.connectivity[i][j] });     
+              }
+            }
+          }
+
+          return connections.sort((a, b) => b.strength - a.strength);
+        }
       },
       methods: {},
       watch: {}

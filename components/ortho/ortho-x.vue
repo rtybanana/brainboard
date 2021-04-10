@@ -1,5 +1,5 @@
 <template>
-  <svg ref="axes" height="165.6pt" version="1.1" viewBox="0 0 187.2 165.6" width="187.2pt" xmlns="http://www.w3.org/2000/svg"
+  <svg ref="axes" id="axes" width="100%" version="1.1" viewBox="0 0 187.2 165.6" xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
     <image width="187.2" height="165.6" href="/brainaxes/x.svg"/>
   </svg>
@@ -19,6 +19,8 @@
   };
 </script>
 
-<style>
-
+<style scoped>
+#axes {
+  overflow: visible;
+}
 </style>
