@@ -79,6 +79,9 @@ const OrthoMixin = {
 
   },
   methods: {
+    /**
+     * Draws a connection line between two functionally connected ROIs
+     */
     drawConnections() {
       this.axes.getElementsByClassName('connections').remove();
 
@@ -104,8 +107,11 @@ const OrthoMixin = {
         this.svg_connections.push(connection);
       });
 
-      this.axes.appendChild(connections);
+      this.axes.insertBefore(connections, this.axes.getElementsByClassName('regions')[0])
     },
+    /**
+     * Draws a dot indicator on the center of mass of each ROI
+     */
     drawRegions() {
       this.axes.getElementsByClassName('regions').remove();
       let regions = this.createGroup('regions');
@@ -127,18 +133,30 @@ const OrthoMixin = {
 
       this.axes.appendChild(regions);
     },
+    /**
+     * Draws white text labels on a black background near where its region central coordinates are.
+     * Takes a variable number of arguments, one for each region ID to label. Labels are placed above 
+     * the highest region and below the lowest to keep labels out of the way as much as possible. If 
+     * there is just one label then above or below is determined by the midpoint of the plot.
+     * 
+     * @param  {...Number} regions region indexes for which to draw labels
+     */
     drawLabels(...regions) {
       let labels = this.createGroup('labels');
       this.axes.appendChild(labels);
 
       regions.sort((a, b) => this.regionCoords[a][1] - this.regionCoords[b][1])
         .forEach((e, i) => {
-          let x = this.regionCoords[e][0];
-          let y = this.regionCoords[e][1] + (i === 0 ? (-10) : (15));
+          let x = this.regionCoords[e][0] + 5;
+          let y = this.regionCoords[e][1];
+
+          if (regions.length > 1) y += (i < (regions.length / 2) ? (-10) : (15));
+          else y += this.regionCoords[e][1] < this.offset[1] ? -10 : 15;
+
           let text = this.createText(this.regionNames[e], { 
             'x': x, 'y': y,
-            'text-anchor': 'middle',
-            'font-size': 9,
+            'text-anchor': 'left',
+            'font-size': 8,
             'class': 'label',
             'pointer-events': 'none', 
             'fill': 'white'
@@ -148,7 +166,8 @@ const OrthoMixin = {
           let [width, height] = [text.getBBox().width, text.getBBox().height];
 
           let textbox = this.createRect({
-            'x': x - (width / 2) - 1, 
+            // 'x': x - (width / 2) - 1, 
+            'x': x - 1,
             'y': y - (height / 2) - 3, 
             'width': width + 2, 'height': height + 1, 
             'pointer-events': 'none', 
@@ -171,7 +190,7 @@ const OrthoMixin = {
           e.setAttributeNS(null, "stroke-width", 4.25); 
           e.setAttributeNS(null, "opacity", 1); 
         }
-        else e.setAttributeNS(null, "opacity", 0.2); 
+        else e.setAttributeNS(null, "opacity", 0); 
       });
 
       this.drawLabels(region1, region2);
@@ -187,7 +206,7 @@ const OrthoMixin = {
 
       this.svg_connections.forEach((e, i) => {
         if (i === index) e.setAttributeNS(null, "stroke-width", 3.5); 
-        e.setAttributeNS(null, "opacity", 0.7); 
+        e.setAttributeNS(null, "opacity", 0.6); 
       });
 
       this.axes.getElementsByClassName('labels').remove();
@@ -200,7 +219,8 @@ const OrthoMixin = {
       });
       
       this.svg_connections.forEach((e, i) => {
-        e.setAttributeNS(null, "opacity", 0.2); 
+        if (this.connections[i].region1 !== index && this.connections[i].region2 !== index) e.setAttributeNS(null, "opacity", 0); 
+        else e.setAttributeNS(null, "opacity", 1); 
       });
 
       this.drawLabels(index);

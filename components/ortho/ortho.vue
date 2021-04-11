@@ -1,8 +1,8 @@
 <template>
-  <div class="py-3">
-    <ortho-x width="35%"   :regions="regionsX" :connections="connections" :region-names="regionNames"></ortho-x>
-    <ortho-y width="30.5%" :regions="regionsY" :connections="connections" :region-names="regionNames"></ortho-y>
-    <ortho-z width="30.5%" :regions="regionsZ" :connections="connections" :region-names="regionNames"></ortho-z>
+  <div class="pt-2">
+    <ortho-x class="d-block mx-auto" style="max-height: calc(0.328 * (100vh - 56px));" :regions="regionsX" :connections="connections" :region-names="regionNames"></ortho-x>
+    <ortho-y class="d-block mx-auto" style="max-height: calc(0.328 * (100vh - 56px));" :regions="regionsY" :connections="connections" :region-names="regionNames"></ortho-y>
+    <ortho-z class="d-block mx-auto" style="max-height: calc(0.328 * (100vh - 56px));" :regions="regionsZ" :connections="connections" :region-names="regionNames"></ortho-z>
   </div>
 </template>
 
@@ -15,13 +15,8 @@
     },
     props: {
       regions: Array,         // n_ROIs x 3 array describing regions center of mass
-      connections: Array,     // connectivity matrix
-      regionNames: Array
-    },
-    data: function () {
-      return {
-        
-      };
+      connections: Array,     // n_connections length array of objects: {region1, region2, strength}
+      regionNames: Array      // n_ROIs length array of region names
     },
     computed: {
       regionsX() {
@@ -32,19 +27,7 @@
       },
       regionsZ() {
         return this.getRegionCoords('z');
-      },
-      // sortedConnections() {
-      //   let connections = [];
-      //   for (let i = 0; i < this.connections.length; i++){
-      //     for (let j = i + 1; j < this.connections.length; j++) {
-      //       if (this.connections[i][j] !== 0) {
-      //         connections.push({ region1: i, region2: j, strength: this.connections[i][j] });     
-      //       }
-      //     }
-      //   }
-
-      //   return connections.sort((a, b) => b.strength - a.strength);
-      // }
+      }
     },
     methods: {
       getRegionCoords(direction) {
