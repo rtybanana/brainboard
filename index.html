@@ -39,8 +39,8 @@
           <input type="file" style="position: fixed; top: -100em">
         </label>
         <b-nav-item-dropdown text="Examples" right>
-          <b-dropdown-item @click="load('/data/simple.json')">Example #1 (Simple)</b-dropdown-item>
-          <b-dropdown-item @click="load('/data/harvard.json')">Example #2 (Harvard Oxford)</b-dropdown-item>
+          <b-dropdown-item @click="load('data/simple.json')">Example #1 (Simple)</b-dropdown-item>
+          <b-dropdown-item @click="load('data/harvard.json')">Example #2 (Harvard Oxford)</b-dropdown-item>
           <b-dropdown-item href="#">Example #3</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
@@ -132,7 +132,7 @@
         }
       },
       created() {
-        this.load('/data/harvard.json');
+        this.load('data/harvard.json');
       },
       watch: {}
     })

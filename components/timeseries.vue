@@ -10,9 +10,11 @@
       highcharts: HighchartsVue.Chart,
     },
     props: {
-      connections: Array,         // n_connections length array of objects: {region1, region2, strength}
-      regionTimeseries: Array,    // n_regions length array, each element containing the node timeseries
-      regionNames: Array          // n_regions length array containing region names
+      connections: Array,           // n_connections length array of objects: {region1, region2, strength}
+      regionTimeseries: Array,      // n_regions length array, each element containing the node timeseries
+      regionNames: Array,           // n_regions length array containing region names,
+      selectedRegions: Array,       // array containing indexes of selected regions from any of the charts
+      selectedConnections: Array    // array containing indexes of selected connections from any of the charts
     },
     computed: {
       /**
@@ -50,7 +52,7 @@
           connected_regions.set(e.region2, 
             connected_regions.has(e.region2) 
               ? [...connected_regions.get(e.region2), e.region1]
-              : [e.region2]
+              : [e.region1]
           ); 
         });
 
@@ -92,8 +94,9 @@
         this.options.series = [];
       });
 
+      // ...this.connectedRegions.get(index)
       EventBus.$on('region:mouseenter', (index) => {
-        this.plotTimeseries(...this.connectedRegions.get(index), index);
+        this.plotTimeseries(index);
       });
 
       EventBus.$on('region:mouseleave', (index) => {
