@@ -32,6 +32,23 @@
   <div id="app" v-cloak>
     <b-navbar type="dark" variant="danger" sticky>
       <b-navbar-brand href="#">BrainBoard</b-navbar-brand>
+      <b-navbar-nav>
+        <b-nav-item-dropdown text="Parameters">
+          <b-dropdown-form form-class="nav-params">
+            <b-form-group label="Connectivity Threshold" label-for="threshold">
+              <b-input-group size="sm">
+                <b-form-input id="threshold" size="sm" v-model="threshold" type="range" min="0" max="1000"></b-form-input>
+                <b-input-group-append>
+                  <b-input-group-text>
+                    {{computedThreshold.toFixed(2)}}
+                  </b-input-group-text>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+          </b-dropdown-form>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+      
 
       <b-navbar-nav class="ml-auto">
         <label class="mb-0 nav-link clickable" class="">
@@ -113,9 +130,18 @@
             }
           }
 
-          let keep = Math.floor(connections.length * this.threshold);
+          let keep = Math.floor(connections.length * this.computedThreshold);
 
           return connections.sort((a, b) => b.strength - a.strength).slice(0, keep);
+        },
+        computedThreshold() {
+          //  y = 7.627206e-26 - (-0.006862342/-6.916626)*(1 - e^(+6.916626*x))
+          //  y = 0.01 - (-0.005945409/-7.07209)*(1 - e^(+7.07209*x))
+          //  y = 0.01 - (-0.07737624/-3.939799)*(1 - e^(+3.939799*x))
+          let y = 0.01 - (-0.07737624/-3.939799)*(1 - Math.exp(+3.939799*(this.threshold / 1000)));
+          // console.log(y);
+          return y;
+          // return this.threshold / 100;
         }
       },
       methods: {
@@ -140,5 +166,10 @@
 
 </body>
 
+<style>
+.nav-params {
+  width: 300px;
+}
+</style>
 </html>
 

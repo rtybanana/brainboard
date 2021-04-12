@@ -112,6 +112,10 @@ const OrthoMixin = {
     }
   },
   methods: {
+    drawConnectivity() {
+      this.drawConnections();
+      this.drawRegions();
+    },
     /**
      * Draws a connection line between two functionally connected ROIs
      */
@@ -283,11 +287,10 @@ const OrthoMixin = {
   },
   mounted() {
     this.axes = this.$refs.axes;
-    this.drawConnections();
-    this.drawRegions();
+    this.drawConnectivity();
   },
   watch: {
-    regions: 'drawRegions',
-    connections: 'drawConnections'
+    regions: 'drawConnectivity',
+    connections: 'drawConnectivity'
   }
 };
