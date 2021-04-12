@@ -1,7 +1,7 @@
 <template>
   <svg  ref="axes" id="axes" width="100%" version="1.1" viewBox="0 0 158.4 165.6" xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-    <image width="158.4" height="165.6" href="/brainaxes/z.svg"/>
+    <image width="158.4" height="165.6" href="../../brainaxes/z.svg"/>
   </svg>
 </template>
 
