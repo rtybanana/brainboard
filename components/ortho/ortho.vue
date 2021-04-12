@@ -14,9 +14,9 @@
       'ortho-z': loader('./components/ortho/ortho-z.vue')
     },
     props: {
-      regions: Array,         // n_ROIs x 3 array describing regions center of mass
+      regions: Array,         // n_regions x 3 array describing regions center of mass
       connections: Array,     // n_connections length array of objects: {region1, region2, strength}
-      regionNames: Array      // n_ROIs length array of region names
+      regionNames: Array      // n_regions length array containing region names
     },
     computed: {
       regionsX() {

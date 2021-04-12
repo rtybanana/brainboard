@@ -47,24 +47,25 @@
     </b-navbar>
 
     <div class="row no-gutters">
-      <div class="col-3" style="z-index: 10;">
+      <div class="col-5 col-lg-3" style="z-index: 10;">
         <div>
           <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white;">Orthographic Projection</div>
           <ortho :regions="regions" :connections="connections" :region-names="region_names"></ortho>
         </div>
       </div>
-      <div class="col-4">
+      <div class="col-7 col-lg-4">
         <div class="row no-gutters">
-          <div class="col-12">
+          <div class="col-12" style="height: calc(0.65 * (100vh - 56px));">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connectivity Wheel</div>
             <connectivity :connections="connections" :region-names="region_names"></connectivity>
           </div>
-          <div class="col-12">
+          <div class="col-12" style="height: calc(0.33 * (100vh - 56px));">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Region Timeseries</div>
+            <timeseries :connections="connections" :region-timeseries="timeseries" :region-names="region_names"></timeseries>
           </div>
         </div>
       </div>
-      <div class="col-5">
+      <div class="col-12 col-lg-5">
         <div class="row no-gutters">
           <div class="col-12">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Region Table</div>
@@ -73,6 +74,9 @@
           <div class="col-12">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connection Table</div>
             <b-table></b-table>
+          </div>
+          <div class="col-12">
+            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Subject Metadata</div>
           </div>
         </div>
       </div>
@@ -86,11 +90,13 @@
       el: '#app',
       components: {
         'ortho': loader('/components/ortho/ortho.vue'),
-        'connectivity': loader('/components/connectivity.vue')
+        'connectivity': loader('/components/connectivity.vue'),
+        'timeseries': loader('/components/timeseries.vue')
       },
       data: {
-        regions: [],
+        timeseries: [],
         connectivity: [],
+        regions: [],
         region_names: [],
 
         threshold: null,
@@ -117,15 +123,16 @@
           fetch(file)
             .then(res => res.json())
             .then(data => {
+              this.timeseries = data.timeseries;
+              this.connectivity = data.connectivity;
               this.regions = data.regions;
               this.region_names = data.region_names;
-              this.connectivity = data.connectivity;
               this.threshold = data.threshold;
             });
         }
       },
       created() {
-        this.load('/data/simple.json');
+        this.load('/data/harvard.json');
       },
       watch: {}
     })

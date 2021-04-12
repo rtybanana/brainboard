@@ -52,9 +52,9 @@ const SvgMixin = {
 const OrthoMixin = {
   mixins: [SvgMixin],
   props: {
-    regions: Array,
-    connections: Array,
-    regionNames: Array
+    regions: Array,         // n_regions x 3 array describing regions center of mass
+    connections: Array,     // n_connections length array of objects: {region1, region2, strength}
+    regionNames: Array      // n_regions length array containing region names
   },
   data() {
     return {
@@ -63,7 +63,12 @@ const OrthoMixin = {
       offset: [0, 0],
 
       svg_regions: [],
-      svg_connections: []
+      svg_connections: [],
+
+      highcharts_colours: [
+        "#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", 
+        "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"
+      ]
     }
   },
   computed: {
@@ -76,7 +81,35 @@ const OrthoMixin = {
         return a;
       }, []);
     },
+    connectionCount() {
+      let map = new Map();
+      this.connections.forEach(e => {
+        map.set(e.region1, map.has(e.region1) ? map.get(e.region1) + 1 : 1);
+        map.set(e.region2, map.has(e.region2) ? map.get(e.region2) + 1 : 1);
+      });
 
+      return map;
+    },
+    /**
+     * Returns a list of giving the proper sort order index of the corresponding region index
+     */
+    sortedRegions() {
+      let sorted_regions = [...this.regions.keys()];
+      let unsorted_regions = new Set([...this.regions.keys()]);
+      sort_index = 0;
+      this.connections.forEach(e => {
+        if (unsorted_regions.has(e.region1)) {
+          sorted_regions[e.region1] = sort_index++;
+          unsorted_regions.delete(e.region1);
+        }
+        if (unsorted_regions.has(e.region2)) {
+          sorted_regions[e.region2] = sort_index++;
+          unsorted_regions.delete(e.region2);
+        }
+      });
+
+      return sorted_regions;
+    }
   },
   methods: {
     /**
@@ -118,10 +151,13 @@ const OrthoMixin = {
 
       this.svg_regions = [];
       this.regionCoords.forEach((e, index) => {
+        let region_colour = this.highcharts_colours[this.sortedRegions[index] % this.highcharts_colours.length];
+        let isolated = !this.connectionCount.has(index);
+
         let region = this.createCircle({
           'cx': e[0], 'cy': e[1], 'r': 4,
           'class': 'region',
-          'fill': '#dc3545'
+          'fill': isolated ? 'none' : region_colour
         });
 
         region.addEventListener('mouseenter', () => { EventBus.$emit('region:mouseenter', index) });
@@ -166,7 +202,6 @@ const OrthoMixin = {
           let [width, height] = [text.getBBox().width, text.getBBox().height];
 
           let textbox = this.createRect({
-            // 'x': x - (width / 2) - 1, 
             'x': x - 1,
             'y': y - (height / 2) - 3, 
             'width': width + 2, 'height': height + 1, 
@@ -182,7 +217,7 @@ const OrthoMixin = {
     EventBus.$on('connection:mouseenter', (region1, region2, index) => {
       this.svg_regions.forEach((e, i) => {
         if (i === region1 || i === region2) e.setAttributeNS(null, "r", 4.5);
-        else e.setAttributeNS(null, "opacity", 0.2);
+        else e.setAttributeNS(null, "opacity", 0.1);
       });
 
       this.svg_connections.forEach((e, i) => {
@@ -213,8 +248,15 @@ const OrthoMixin = {
     });
 
     EventBus.$on('region:mouseenter', (index) => {
+      let connected_regions = this.connections.reduce((a, e) => {
+        if (e.region1 === index) a.push(e.region2);
+        else if (e.region2 === index) a.push(e.region1);
+        return a;
+      }, []);
+
       this.svg_regions.forEach((e, i) => {
-        if (i !== index) e.setAttributeNS(null, "opacity", 0.2); 
+        if (connected_regions.includes(i)) e.setAttributeNS(null, "opacity", 1); 
+        else if (i !== index) e.setAttributeNS(null, "opacity", 0.1); 
         else e.setAttributeNS(null, "r", 4.5);
       });
       

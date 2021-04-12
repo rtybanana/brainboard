@@ -1,6 +1,6 @@
 <template>
-  <div class="py-3">
-    <highcharts ref="chart" :options="options"></highcharts>
+  <div class="py-3 h-100">
+    <highcharts class="h-100" ref="chart" :options="options"></highcharts>
     <div id="connectivity-container"></div>
   </div>
 </template>
@@ -12,7 +12,7 @@ module.exports = {
   },
   props: {
     connections: Array,     // n_connections length array of objects: {region1, region2, strength}
-    regionNames: Array,     // n_ROIs length array of region names
+    regionNames: Array,     // n_regions length array containing region names
   },
   computed: {
     connectionCount() {
@@ -58,13 +58,30 @@ module.exports = {
         ...options,
         tooltip: {
           padding: 3,
+          shape: 'rect',
           formatter: function () {
             let props = this.point.options;
-
-            if (props.isNode) 
-              return `<b>Region</b><br>${props.id}<br>No. of Connections: ${props.connections}`;
-            
-            else return `<b>Connection</b><br>${props.from}<br>${props.to}<br><b>${props.weight.toFixed(3)}</b>`;
+            let color = this.point.color;
+            if (props.isNode) {
+              return `
+                <b>Region</b><br>\
+                <span style="color:${color}">${props.id}</span><br>\
+                No. of Connections: ${props.connections}
+              `;
+            }
+            else {
+              let fromColour = this.point.fromNode.color;
+              let toColour = this.point.toNode.color;
+              return `
+                <b>Connection</b><br>\
+                <span style="color:${fromColour}">${props.from}</span><br>\
+                <span style="color:${toColour}">${props.to}</span><br>\
+                <b>${props.weight.toFixed(3)}</b>
+              `;
+            }
+          },
+          positioner: function (labelWidth, labelHeight) {
+            return { x: (this.chart.plotWidth / 2) - (labelWidth / 2) + this.chart.plotLeft, y: (this.chart.plotHeight / 2) - (labelHeight / 2) + this.chart.plotTop };
           }
         }
       },
@@ -82,24 +99,34 @@ module.exports = {
   },
   mounted() {
     EventBus.$on('connection:mouseenter', (region1, region2, index) => {
-      this.$refs.chart.chart.series[0].data.forEach(e => e.setState('inactive'));
-      this.$refs.chart.chart.series[0].data[index].setState('hover');
+      let chart = this.$refs.chart.chart;
+      let connection = chart.series[0].data[index];
+
+      chart.series[0].data.forEach(e => e.setState('inactive'));
+      connection.setState('hover');
+      chart.tooltip.refresh(connection);
     });
 
     EventBus.$on('connection:mouseleave', () => {
-      this.$refs.chart.chart.series[0].data.forEach(e => e.setState());
+      let chart = this.$refs.chart.chart;
+      chart.series[0].data.forEach(e => e.setState());
+      chart.tooltip.hide();
     });
 
     EventBus.$on('region:mouseenter', (index) => {
-      let region = this.$refs.chart.chart.series[0].nodes.find(e => e.options.index === index);
+      let chart = this.$refs.chart.chart;
+      let region = chart.series[0].nodes.find(e => e.options.index === index);
       if (region) {
-        this.$refs.chart.chart.series[0].nodes.forEach(e => e.setState('inactive'));
+        chart.series[0].nodes.forEach(e => e.setState('inactive'));
         region.setState('hover');
+        chart.tooltip.refresh(region);
       }
     });
 
     EventBus.$on('region:mouseleave', () => {
-      this.$refs.chart.chart.series[0].nodes.forEach(e => e.setState());
+      let chart = this.$refs.chart.chart;
+      chart.series[0].nodes.forEach(e => e.setState());
+      chart.tooltip.hide();
     });
   },
   watch: {
@@ -117,7 +144,7 @@ module.exports = {
  */ 
 var options = {
   title: {
-    text: null,
+    text: null
   },
   accessibility: {
     point: {
@@ -140,12 +167,17 @@ var options = {
           }
         }
       }
+    },
+    dependencywheel: {
+      tooltip: {
+        followPointer: false
+      }
     }
   },
   chart: {
-    height: 600,
+    // height: 600,
     margin: 15,
-    marginTop: 30
+    // marginTop: 30
   },
 
   series: [{
