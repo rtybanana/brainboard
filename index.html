@@ -33,8 +33,8 @@
     <b-navbar type="dark" variant="danger" sticky>
       <b-navbar-brand href="#">BrainBoard</b-navbar-brand>
       <b-navbar-nav>
-        <b-nav-item-dropdown text="Parameters">
-          <b-dropdown-form form-class="nav-params">
+        <b-nav-item-dropdown ref="params" text="Parameters">
+          <b-dropdown-form form-class="nav-params" @mouseleave="$refs.params.visible = false;">
             <b-form-group label="Connectivity Threshold" label-for="threshold">
               <b-input-group size="sm">
                 <b-form-input id="threshold" size="sm" v-model="threshold" type="range" min="1" max="1000"></b-form-input>
