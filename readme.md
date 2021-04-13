@@ -111,7 +111,7 @@ There are two ways to use BrainBoard. The easiest way is to use the live hosted 
 
 BrainBoard expects visualisation data to be provided in the following JSON format:
 
-```json
+```jsonc
 {
   "timeseries": [
     // n_regions x n_timepoints  timeseries data
