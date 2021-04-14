@@ -195,11 +195,10 @@ Rory Pinkney - [@rorypinknee](https://twitter.com/rorypinknee) - rorypinkney@yah
 
 
 <!-- ACKNOWLEDGEMENTS -->
-<!-- ## Acknowledgements
+## Acknowledgements
 
-* []()
-* []()
-* []() -->
+* [Nilearn Connectome Plotting](https://nilearn.github.io/auto_examples/03_connectivity/plot_sphere_based_connectome.html) for orthographically projected glass brain template images and inspiration
+* [Highcharts](https://www.highcharts.com/docs/chart-and-series-types/dependency-wheel) for dependency wheel chart
 
 
 
