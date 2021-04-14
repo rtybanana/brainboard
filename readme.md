@@ -185,6 +185,12 @@ Contributions are what make the open source community such an amazing place to b
 Distributed under the MIT License. See `LICENSE` for more information.
  -->
 
+<!-- ACKNOWLEDGEMENTS -->
+## Acknowledgements
+
+* [Nilearn Connectome Plotting](https://nilearn.github.io/auto_examples/03_connectivity/plot_sphere_based_connectome.html#display-connectome) for orthographically projected glass brain template images and inspiration
+* [Highcharts](https://www.highcharts.com/docs/chart-and-series-types/dependency-wheel) for dependency wheel chart
+
 
 ## Contact
 
@@ -192,13 +198,6 @@ Rory Pinkney - [@rorypinknee](https://twitter.com/rorypinknee) - rorypinkney@yah
 
 <!-- Project Link: [https://github.com/rtybanana/web-brain-visualiser](https://github.com/rtybanana/web-brain-visualiser) -->
 
-
-
-<!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
-
-* [Nilearn Connectome Plotting](https://nilearn.github.io/auto_examples/03_connectivity/plot_sphere_based_connectome.html) for orthographically projected glass brain template images and inspiration
-* [Highcharts](https://www.highcharts.com/docs/chart-and-series-types/dependency-wheel) for dependency wheel chart
 
 
 
