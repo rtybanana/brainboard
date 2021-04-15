@@ -1,4 +1,18 @@
 /**
+ * Vue global mixin for methods and data used in many otherwise unrelated places
+ */
+const GlobalMixin = {
+  data() {
+    return {
+      highcharts_colours: [
+        "#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", 
+        "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"
+      ]
+    }
+  }
+};
+
+/**
  * Vue mixin for interfacing with SVG
  */
 const SvgMixin = {
@@ -50,11 +64,13 @@ const SvgMixin = {
  * Vue mixin for ortho projection plotting and interaction
  */
 const OrthoMixin = {
-  mixins: [SvgMixin],
+  mixins: [GlobalMixin, SvgMixin],
   props: {
     regions: Array,         // n_regions x 3 array describing regions center of mass
     connections: Array,     // n_connections length array of objects: {region1, region2, strength}
-    regionNames: Array      // n_regions length array containing region names
+    regionNames: Array,     // n_regions length array containing region names
+    sortedRegions: Array,   // n_regions length array containing the sort order of the region for highcharts colour matching
+    nNeighbours: Map        // n_regions length map describing how many one hop neighbours each region has   
   },
   data() {
     return {
@@ -63,12 +79,7 @@ const OrthoMixin = {
       offset: [0, 0],
 
       svg_regions: [],
-      svg_connections: [],
-
-      highcharts_colours: [
-        "#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9", 
-        "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"
-      ]
+      svg_connections: []
     }
   },
   computed: {
@@ -81,35 +92,35 @@ const OrthoMixin = {
         return a;
       }, []);
     },
-    connectionCount() {
-      let map = new Map();
-      this.connections.forEach(e => {
-        map.set(e.region1, map.has(e.region1) ? map.get(e.region1) + 1 : 1);
-        map.set(e.region2, map.has(e.region2) ? map.get(e.region2) + 1 : 1);
-      });
+    // connectionCount() {
+    //   let map = new Map();
+    //   this.connections.forEach(e => {
+    //     map.set(e.region1, map.has(e.region1) ? map.get(e.region1) + 1 : 1);
+    //     map.set(e.region2, map.has(e.region2) ? map.get(e.region2) + 1 : 1);
+    //   });
 
-      return map;
-    },
+    //   return map;
+    // },
     /**
      * Returns a list of giving the proper sort order index of the corresponding region index
      */
-    sortedRegions() {
-      let sorted_regions = [...this.regions.keys()];
-      let unsorted_regions = new Set([...this.regions.keys()]);
-      sort_index = 0;
-      this.connections.forEach(e => {
-        if (unsorted_regions.has(e.region1)) {
-          sorted_regions[e.region1] = sort_index++;
-          unsorted_regions.delete(e.region1);
-        }
-        if (unsorted_regions.has(e.region2)) {
-          sorted_regions[e.region2] = sort_index++;
-          unsorted_regions.delete(e.region2);
-        }
-      });
+    // sortedRegions() {
+    //   let sorted_regions = [...this.regions.keys()];
+    //   let unsorted_regions = new Set([...this.regions.keys()]);
+    //   sort_index = 0;
+    //   this.connections.forEach(e => {
+    //     if (unsorted_regions.has(e.region1)) {
+    //       sorted_regions[e.region1] = sort_index++;
+    //       unsorted_regions.delete(e.region1);
+    //     }
+    //     if (unsorted_regions.has(e.region2)) {
+    //       sorted_regions[e.region2] = sort_index++;
+    //       unsorted_regions.delete(e.region2);
+    //     }
+    //   });
 
-      return sorted_regions;
-    }
+    //   return sorted_regions;
+    // }
   },
   methods: {
     drawConnectivity() {
@@ -124,9 +135,12 @@ const OrthoMixin = {
 
       let connections = this.createGroup('connections');
       this.svg_connections = [];
+      // console.log(this.regionCoords);
       this.connections.forEach((e, index) => {
         let coords1 = this.regionCoords[e.region1];
         let coords2 = this.regionCoords[e.region2];
+        if (!coords1 || !coords2) return;
+
         let connection = this.createPath(
           { 
             'd': `M ${coords1[0]} ${coords1[1]} L ${coords2[0]} ${coords2[1]}`, 
@@ -156,7 +170,7 @@ const OrthoMixin = {
       this.svg_regions = [];
       this.regionCoords.forEach((e, index) => {
         let region_colour = this.highcharts_colours[this.sortedRegions[index] % this.highcharts_colours.length];
-        let isolated = !this.connectionCount.has(index);
+        let isolated = !this.nNeighbours.has(index);
 
         let region = this.createCircle({
           'cx': e[0], 'cy': e[1], 'r': 4,
@@ -284,13 +298,36 @@ const OrthoMixin = {
 
       this.axes.getElementsByClassName('labels').remove();
     });
+
+    EventBus.$on('network:mouseenter', (network) => {
+      this.svg_regions.forEach((e, i) => {
+        if (!network.has(i)) e.setAttributeNS(null, "opacity", 0.1);
+      });
+
+      this.svg_connections.forEach((e, i) => {
+        if (!network.has(this.connections[i].region1) && !network.has(this.connections[i].region2)) {
+          e.setAttributeNS(null, "opacity", 0); 
+        }
+        else e.setAttributeNS(null, "opacity", 1); 
+      });
+    });
+
+    EventBus.$on('network:mouseleave', (network) => {
+      this.svg_regions.forEach((e, i) => {
+        e.setAttributeNS(null, "opacity", 1);
+      });
+
+      this.svg_connections.forEach((e, i) => {
+        e.setAttributeNS(null, "opacity", 0.7); 
+      });
+    });
   },
   mounted() {
     this.axes = this.$refs.axes;
     this.drawConnectivity();
   },
   watch: {
-    regions: 'drawConnectivity',
+    // regions: 'drawConnectivity',
     connections: 'drawConnectivity'
   }
 };

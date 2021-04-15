@@ -12,31 +12,12 @@
     props: {
       connections: Array,           // n_connections length array of objects: {region1, region2, strength}
       regionTimeseries: Array,      // n_regions length array, each element containing the node timeseries
-      regionNames: Array,           // n_regions length array containing region names,
+      regionNames: Array,           // n_regions length array containing region names
+      sortedRegions: Array,         // n_regions length array containing the sort order of the region for highcharts colour matching
       selectedRegions: Array,       // array containing indexes of selected regions from any of the charts
       selectedConnections: Array    // array containing indexes of selected connections from any of the charts
     },
     computed: {
-      /**
-       * Returns a list of giving the proper sort order index of the corresponding region index
-       */
-      sortedRegions() {
-        let sorted_regions = [...this.regionTimeseries.keys()];
-        let unsorted_regions = new Set([...this.regionTimeseries.keys()]);
-        sort_index = 0;
-        this.connections.forEach(e => {
-          if (unsorted_regions.has(e.region1)) {
-            sorted_regions[e.region1] = sort_index++;
-            unsorted_regions.delete(e.region1);
-          }
-          if (unsorted_regions.has(e.region2)) {
-            sorted_regions[e.region2] = sort_index++;
-            unsorted_regions.delete(e.region2);
-          }
-        });
-
-        return sorted_regions;
-      },
       /**
        * Returns a map of regions connected to a provided region index
        */

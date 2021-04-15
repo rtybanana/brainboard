@@ -12,7 +12,7 @@
 
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver" crossorigin="anonymous"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@latest/dist/vue.js"></script>
   <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
   <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
   <script src="https://unpkg.com/http-vue-loader"></script>
@@ -35,15 +35,20 @@
       <b-navbar-nav>
         <b-nav-item-dropdown ref="params" text="Parameters">
           <b-dropdown-form form-class="nav-params" @mouseleave="$refs.params.visible = false;">
-            <b-form-group label="Connectivity Threshold" label-for="threshold">
-              <b-input-group size="sm">
-                <b-form-input id="threshold" size="sm" v-model="threshold" type="range" min="1" max="1000"></b-form-input>
+            <b-form-group label="Connectivity Threshold">
+              <b-form-radio v-model="threshold_type" name="threshold-type" value="percentage">Percentage</b-form-radio>
+              <b-form-radio v-model="threshold_type" name="threshold-type" value="count">Count</b-form-radio>
+            </b-form-group>
+            <b-form-group label-for="threshold">
+              <b-input-group v-if="threshold_type === 'percentage'" size="sm">
+                <b-form-input id="threshold" size="sm" v-model="threshold" type="range" min="0" max="1000"></b-form-input>
                 <b-input-group-append>
                   <b-input-group-text>
                     {{(computedThreshold * 100).toFixed(1)}}%
                   </b-input-group-text>
                 </b-input-group-append>
               </b-input-group>
+              <b-form-spinbutton v-else-if="threshold_type === 'count'" size="sm" v-model="threshold" min="1" :max="connection_list.length"></b-form-spinbutton>
             </b-form-group>
           </b-dropdown-form>
         </b-nav-item-dropdown>
@@ -63,40 +68,61 @@
       </b-navbar-nav>
     </b-navbar>
 
-    <div class="row no-gutters">
+    <div class="row no-gutters p-1">
       <div class="col-5 col-lg-3" style="z-index: 10;">
         <div>
           <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white;">Orthographic Projection</div>
-          <ortho :regions="regions" :connections="connections" :region-names="region_names"></ortho>
+          <ortho :regions="regions" 
+                 :connections="connections" 
+                 :region-names="region_names" 
+                 :n-neighbours="regionNeighbours" 
+                 :sorted-regions="sortedRegions">
+          </ortho>
         </div>
       </div>
       <div class="col-7 col-lg-4">
         <div class="row no-gutters">
           <div class="col-12" style="height: calc(0.65 * (100vh - 56px));">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connectivity Wheel</div>
-            <connectivity :connections="connections" :region-names="region_names"></connectivity>
+            <connectivity :connections="connections" 
+                          :region-names="region_names" 
+                          :n-neighbours="regionNeighbours">
+            </connectivity>
           </div>
           <div class="col-12" style="height: calc(0.33 * (100vh - 56px));">
             <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Region Timeseries</div>
-            <timeseries :connections="connections" :region-timeseries="timeseries" :region-names="region_names"></timeseries>
+            <timeseries :connections="connections" 
+                        :region-timeseries="timeseries" 
+                        :region-names="region_names"
+                        :sorted-regions="sortedRegions">
+            </timeseries>
           </div>
         </div>
       </div>
       <div class="col-12 col-lg-5">
-        <div class="row no-gutters">
+        <tables :regions="regions" :connections="connections" :region-names="region_names" :networks="networks" :n-neighbours="regionNeighbours" :sorted-regions="sortedRegions"></tables>
+        <!-- <div class="row no-gutters pl-lg-3">
           <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Region Table</div>
-            <b-table></b-table>
+            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Regions</div>
+            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="regionTableData"></b-table>
           </div>
           <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connection Table</div>
-            <b-table></b-table>
+            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connections</div>
+            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="connectionTableData"></b-table>
           </div>
           <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Metadata</div>
+            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Distinct Networks</div>
+            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="networkTableData"></b-table>
           </div>
-        </div>
+        </div> -->
       </div>
+
+      <!-- <div class="col-5 col-lg-3" style="z-index: 10;">
+        <div>
+          <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white;">Distinct Networks</div>
+          <ortho :regions="regions" :networks="networks" :region-names="region_names"></ortho>
+        </div>
+      </div> -->
     </div>
   </div>
 
@@ -108,49 +134,109 @@
       components: {
         'ortho': loader('components/ortho/ortho.vue'),
         'connectivity': loader('components/connectivity.vue'),
-        'timeseries': loader('components/timeseries.vue')
+        'timeseries': loader('components/timeseries.vue'),
+        'tables': loader('components/tables.vue')
       },
       data: {
+        connectivity_worker: null,
+
         timeseries: [],
         connectivity: [],
         regions: [],
         region_names: [],
 
-        threshold: 282,
-        file: null
+        connection_list: [],
+        threshold_type: 'count',
+        threshold: 15,
+        // percentage_threshold: 282,
+        file: null,
+
+        loading: false
       },
       computed: {
         connections() {
-          let connections = [];
-          for (let i = 0; i < this.connectivity.length; i++){
-            for (let j = i + 1; j < this.connectivity.length; j++) {
-              if (this.connectivity[i][j] !== 0) {
-                connections.push({ region1: i, region2: j, strength: this.connectivity[i][j] });     
-              }
+          let keep = 0;
+          if (this.connection_list.length > 0) {
+            
+            if (this.threshold_type === 'percentage') keep = Math.floor(this.connection_list.length * this.computedThreshold);
+            else if (this.threshold_type === 'count') keep = this.threshold;
+
+            // console.log(this.positiveConnections.slice(0, keep));
+            return this.connection_list.slice(0, keep);
+          }
+          return [];
+        },
+        regionNeighbours() {
+          let counts = new Map();
+          this.connections.forEach(e => {
+            counts.set(e.region1, counts.has(e.region1) ? counts.get(e.region1) + 1 : 1);
+            counts.set(e.region2, counts.has(e.region2) ? counts.get(e.region2) + 1 : 1);
+          });
+
+          return counts;
+        },
+        /**
+         * Returns a list of giving the proper sort order index of the corresponding region index
+         */
+        sortedRegions() {
+          let sorted_regions = [...this.regions.keys()];
+          let unsorted_regions = new Set([...this.regions.keys()]);
+          sort_index = 0;
+          for (let e of this.connection_list) {
+            if (unsorted_regions.has(e.region1)) {
+              sorted_regions[e.region1] = sort_index++;
+              unsorted_regions.delete(e.region1);
             }
+            if (unsorted_regions.has(e.region2)) {
+              sorted_regions[e.region2] = sort_index++;
+              unsorted_regions.delete(e.region2);
+            }
+
+            if (unsorted_regions.size === 0) break;
           }
 
-          let keep = Math.floor(connections.length * this.computedThreshold);
-
-          return connections.sort((a, b) => b.strength - a.strength).slice(0, keep);
+          return sorted_regions;
         },
         computedThreshold() {
-          //  y = 7.627206e-26 - (-0.006862342/-6.916626)*(1 - e^(+6.916626*x))
-          //  y = 0.01 - (-0.005945409/-7.07209)*(1 - e^(+7.07209*x))
-          //  y = 0.01 - (-0.07737624/-3.939799)*(1 - e^(+3.939799*x))
-          let y = 0.01 - (-0.07737624/-3.939799)*(1 - Math.exp(+3.939799*(this.threshold / 1000)));
-          console.log(this.threshold);
-          return y;
-          // return this.threshold / 100;
+          if (this.threshold_type === 'percentage') {
+            return this.thresholdYfromX(this.threshold);
+          }
+        },
+        networks() {
+          let networks = [];
+          this.connections.forEach(c => {
+            let in_networks = [];             // list of networks this connection appears in (for network merging)
+            networks.forEach((n, i) => {
+              if (n.has(c.region1) || n.has(c.region2)) {
+                in_networks.push(i);
+                n.add(c.region1);
+                n.add(c.region2);
+              }
+            });
+
+            if (in_networks.length === 0) {
+              let new_network = new Set([c.region1, c.region2]);
+              // console.log(new_network);
+              networks.push(new_network);
+            }
+            else if (in_networks.length > 1) {
+              // for each containing set other than the first (iterate backwards)
+              // console.log('merge networks');
+              for (let i = in_networks.length - 1; i > 0; i--) {
+                networks[in_networks[i]].forEach(r => networks[in_networks[0]].add(r));       // merge containing set into first
+                networks.splice(in_networks[i], 1);                                           // remove containing set
+              }
+            }
+          });
+
+          networks = networks.filter(e => e.size > 2);
+          return networks;
         }
       },
       methods: {
-        thresholdXfromY(y) {
-          //  y = 0.01 - (-0.07737624/-3.939799)*(1 - e^(+3.939799*x))
-          let x = Math.log(-(-3.939799*y - 0.03797825) / 0.07737624) / 3.939799;
-          return x * 1000;
-        },
         load(file) {
+          console.log('loading');
+          this.loading = true;
           fetch(file)
             .then(res => res.json())
             .then(data => {
@@ -158,14 +244,63 @@
               this.connectivity = data.connectivity;
               this.regions = data.regions;
               this.region_names = data.region_names;
-              this.threshold = this.thresholdXfromY(data.threshold);
+              if (data.threshold < 1) {
+                this.threshold_type = 'percentage';
+                this.threshold = this.thresholdXfromY(data.threshold);
+              }
+              else {
+                this.threshold_type = 'count';
+                this.threshold = data.threshold;
+              }
+              
+              console.log('loaded');
             });
+        },
+        thresholdXfromY(y) {
+          let x = Math.log(-(-3.9398*y - 0.037978) / 0.077376) / 3.9398;
+          return x * 1000;
+        },
+        thresholdYfromX(x) {
+          let y = 0.01 - (-0.07737624/-3.939799)*(1 - Math.exp(+3.939799*(x / 1000)));
+          return y;
+        },
+        initConnectivityWorker() {
+          this.connectivity_worker = new Worker('workers/calculateConnectivity.js');
+          this.connectivity_worker.onmessage = (e => { 
+            this.connection_list = e.data; 
+            this.loading = false; 
+          }).bind(this);
+        },
+        destroyConnectivityWorker() {
+          this.connectivity_worker.terminate();
         }
       },
       created() {
-        this.load('data/harvard.json');
+        this.initConnectivityWorker();
+        this.load('data/schaefer400.json');
       },
-      watch: {}
+      beforeDestroy() {
+        this.destroyConnectivityWorker();
+      },
+      watch: {
+        /**
+         * If new connectivity matrix is loaded then start web worker to parse connections in background
+         */
+        connectivity(connectivity) {
+          this.connectivity_worker.postMessage(connectivity);
+        },
+        /**
+         * If the threshold type is changed then retain the desired number of connections by coercing the 
+         * percentage into the equivalent count.
+         */
+        threshold_type(newValue) {
+          console.log(newValue, this.loading);
+          if (!this.loading) {      // if loading dont try to coerce threshold
+            if (newValue === 'percentage') this.threshold = this.thresholdXfromY(this.threshold / this.connection_list.length);
+            if (newValue === 'count') this.threshold = this.thresholdYfromX(this.threshold) * this.connection_list.length; 
+          }
+        }
+      }
     })
   </script>
 

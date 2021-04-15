@@ -13,17 +13,18 @@ module.exports = {
   props: {
     connections: Array,     // n_connections length array of objects: {region1, region2, strength}
     regionNames: Array,     // n_regions length array containing region names
+    nNeighbours: Map        // n_regions length map describing how many one hop neighbours each region has   
   },
   computed: {
-    connectionCount() {
-      let map = new Map();
-      this.connections.forEach(e => {
-        map.set(e.region1, map.has(e.region1) ? map.get(e.region1) + 1 : 1);
-        map.set(e.region2, map.has(e.region2) ? map.get(e.region2) + 1 : 1);
-      });
+    // connectionCount() {
+    //   let map = new Map();
+    //   this.connections.forEach(e => {
+    //     map.set(e.region1, map.has(e.region1) ? map.get(e.region1) + 1 : 1);
+    //     map.set(e.region2, map.has(e.region2) ? map.get(e.region2) + 1 : 1);
+    //   });
 
-      return map;
-    },
+    //   return map;
+    // },
     namedConnections() {
       let named_connections = [];
       this.connections.forEach((e, index) => {
@@ -45,7 +46,7 @@ module.exports = {
         nodes.push({
           id: e, 
           index: i,
-          connections: this.connectionCount.get(i)
+          connections: this.nNeighbours.get(i)
         });
       });
 
@@ -62,11 +63,13 @@ module.exports = {
           formatter: function () {
             let props = this.point.options;
             let color = this.point.color;
+            // console.log(props);
             if (props.isNode) {
               return `
                 <b>Region</b><br>\
                 <span style="color:${color}">${props.id}</span><br>\
-                No. of Connections: ${props.connections}
+                No. of Connections: ${props.connections}<br>\
+                Index: ${props.index}
               `;
             }
             else {
