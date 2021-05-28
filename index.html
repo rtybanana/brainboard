@@ -54,6 +54,31 @@
         </b-nav-item-dropdown>
       </b-navbar-nav>
       
+      <b-sidebar v-model="show_source" title="Data Source" width="350px" right shadow backdrop>
+        <div class="px-3 py-2">
+          <p>
+            All of the examples included in BrainBoard were generated using subject data from the Alzheimer's Disease Neurimaging Initiative 3 (<a href="http://adni.loni.usc.edu/">ADNI3</a>) dataset<sup>1</sup>. 
+            The fMRI image for the baseline scan of subject <code>168_S_6320</code> is minimally preprocessed using <code>fMRIPrep</code><sup>2</sup>. 
+            The resulting data is reconstructed, parcellated into the Schaefer100x7 and Harvard-Oxford atlases and then exported using a custom Python script
+            utilising functionality provided by the <code>Nilearn</code><sup>3</sup> Python package. 
+          </p>
+        </div>
+        <div class="px-3 py-2" style="position: absolute; bottom:0; font-size: 12px;">
+          <h5>References</h5>
+          <div class="pb-1">
+            [1] Mueller, S. G., Weiner, M. W., Thal, L. J., Petersen, R. C., Jack, C., Jagust, W., ... & Beckett, L. (2005). 
+            The Alzheimer’s disease neuroimaging initiative. Neuroimaging Clinics of North America, 15(4), 869.
+          </div>
+          <div class="pb-1">
+            [2] Esteban, O., Markiewicz, C. J., Blair, R. W., Moodie, C. A., Isik, A. I., Erramuzpe, A., ... & Gorgolewski, K. J. (2019). 
+            fMRIPrep: a robust preprocessing pipeline for functional MRI. Nature methods, 16(1), 111-116.
+          </div>
+          <div class="pb-1">
+            [3] Abraham, A., Pedregosa, F., Eickenberg, M., Gervais, P., Mueller, A., Kossaifi, J., ... & Varoquaux, G. (2014). 
+            Machine learning for neuroimaging with scikit-learn. Frontiers in neuroinformatics, 8, 14.
+          </div>
+        </div>
+      </b-sidebar>
 
       <b-navbar-nav class="ml-auto">
         <label class="mb-0 nav-link clickable" class="">
@@ -63,7 +88,8 @@
         <b-nav-item-dropdown text="Examples" right>
           <b-dropdown-item @click="load('data/simple.json')">Example #1 (Simple)</b-dropdown-item>
           <b-dropdown-item @click="load('data/harvard.json')">Example #2 (Harvard Oxford)</b-dropdown-item>
-          <b-dropdown-item href="#">Example #3</b-dropdown-item>
+          <b-dropdown-item @click="load('data/schaefer100.json')">Example #3 (Schaefer100x7)</b-dropdown-item>
+          <b-dropdown-item @click="show_source = true;">View Source</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-navbar>
@@ -101,28 +127,7 @@
       </div>
       <div class="col-12 col-lg-5">
         <tables :regions="regions" :connections="connections" :region-names="region_names" :networks="networks" :n-neighbours="regionNeighbours" :sorted-regions="sortedRegions"></tables>
-        <!-- <div class="row no-gutters pl-lg-3">
-          <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Regions</div>
-            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="regionTableData"></b-table>
-          </div>
-          <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Connections</div>
-            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="connectionTableData"></b-table>
-          </div>
-          <div class="col-12">
-            <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white; z-index: 10;">Distinct Networks</div>
-            <b-table class="mt-4" sticky-header="calc(0.28 * (100vh - 56px))" head-variant="light" small :items="networkTableData"></b-table>
-          </div>
-        </div> -->
       </div>
-
-      <!-- <div class="col-5 col-lg-3" style="z-index: 10;">
-        <div>
-          <div class="px-1 pb-1" style="position:absolute; background-color: black; color: white;">Distinct Networks</div>
-          <ortho :regions="regions" :networks="networks" :region-names="region_names"></ortho>
-        </div>
-      </div> -->
     </div>
   </div>
 
@@ -150,7 +155,8 @@
         threshold: 15,
         // percentage_threshold: 282,
         file: null,
-
+        
+        show_source: false,
         loading: false
       },
       computed: {
@@ -277,7 +283,7 @@
       },
       created() {
         this.initConnectivityWorker();
-        this.load('data/schaefer400.json');
+        this.load('data/harvard.json');
       },
       beforeDestroy() {
         this.destroyConnectivityWorker();

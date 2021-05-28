@@ -68,8 +68,7 @@ module.exports = {
               return `
                 <b>Region</b><br>\
                 <span style="color:${color}">${props.id}</span><br>\
-                No. of Connections: ${props.connections}<br>\
-                Index: ${props.index}
+                Degree: <b>${props.connections}</b><br>
               `;
             }
             else {
@@ -79,7 +78,7 @@ module.exports = {
                 <b>Connection</b><br>\
                 <span style="color:${fromColour}">${props.from}</span><br>\
                 <span style="color:${toColour}">${props.to}</span><br>\
-                <b>${props.weight.toFixed(3)}</b>
+                Strength: <b>${props.weight.toFixed(3)}</b>
               `;
             }
           },

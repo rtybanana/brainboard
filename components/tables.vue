@@ -103,7 +103,7 @@
 
           network_table.push({
             estimated_hub: this.regionNames[estimated_hub],
-            hub_connections: this.nNeighbours.get(estimated_hub),
+            degree: this.nNeighbours.get(estimated_hub),
             total_connections: this.networks[i].size,
             colour: this.getColour(this.sortedRegions[estimated_hub]),
             network: n
@@ -129,7 +129,7 @@
 
         network_fields: [
           {key: 'estimated_hub'},
-          {key: 'hub_connections'},
+          {key: 'degree'},
           {key: 'total_connections', sortable: true},
         ],
 
