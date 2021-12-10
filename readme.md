@@ -44,7 +44,7 @@
     <!-- <a href="https://github.com/rtybanana/web-brain-visualiser"><strong>Explore the docs »</strong></a>
     <br />
     <br /> -->
-    <a href="https://polysoftit.co.uk/web-brain-visualiser">View Demo</a>
+    <a href="https://polysoftit.co.uk/brainboard/">View Demo</a>
     ·
     <a href="https://github.com/rtybanana/web-brain-visualiser/issues">Report Bug</a>
     ·
